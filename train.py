@@ -12,10 +12,10 @@ from utilities.trainer import PGTrainer
 
 
 parser = argparse.ArgumentParser(description="Train rl agent.")
-parser.add_argument("--save-path", type=str, nargs="?", default="./", help="Please enter the directory of saving model.")
-parser.add_argument("--alg", type=str, nargs="?", default="mappo", help="Please enter the alg name.")
+parser.add_argument("--save-path", type=str, nargs="?", default="C:/PDN_runs/MAPDN", help="Please enter the directory of saving model.")
+parser.add_argument("--alg", type=str, nargs="?", default="coma", help="Please enter the alg name.")
 parser.add_argument("--env", type=str, nargs="?", default="var_voltage_control", help="Please enter the env name.")
-parser.add_argument("--alias", type=str, nargs="?", default="", help="Please enter the alias for exp control.")
+parser.add_argument("--alias", type=str, nargs="?", default="original", help="Please enter the alias for exp control.")
 parser.add_argument("--mode", type=str, nargs="?", default="distributed", help="Please enter the mode: distributed or decentralised.")
 parser.add_argument("--scenario", type=str, nargs="?", default="case33_3min_final", help="Please input the valid name of an environment scenario.")
 parser.add_argument("--voltage-barrier-type", type=str, nargs="?", default="l1", help="Please input the valid voltage barrier type: l1, courant_beltrami, l2, bowl or bump.")
@@ -55,15 +55,17 @@ args = convert(alg_config_dict)
 
 # define the save path
 save_path = os.path.normpath(argv.save_path)
-model_save_root = os.path.join(save_path, "model_save")
-tensorboard_root = os.path.join(save_path, "tensorboard")
+model_save_root = os.path.join(save_path, "train_save")
+tensorboard_root = os.path.join(save_path, "train_save")
 model_save_dir = os.path.join(model_save_root, log_name)
 tensorboard_dir = os.path.join(tensorboard_root, log_name)
 
 # create the save folders
-if "model_save" not in os.listdir(save_path):
-    os.mkdir(model_save_root)
-if "tensorboard" not in os.listdir(save_path):
+# if "model_save" not in os.listdir(save_path):
+#     os.mkdir(model_save_root)
+# if "tensorboard" not in os.listdir(save_path):
+#     os.mkdir(tensorboard_root)
+if "train_save" not in os.listdir(save_path):
     os.mkdir(tensorboard_root)
 if log_name not in os.listdir(model_save_root):
     os.mkdir(model_save_dir)
