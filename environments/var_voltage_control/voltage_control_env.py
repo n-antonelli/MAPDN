@@ -189,7 +189,7 @@ class VoltageControl(MultiAgentEnv):
             q_loss = np.mean( np.abs(self.powergrid.sgen["q_mvar"]) )
             self.powergrid = last_powergrid
             reward, info = self._calc_reward()
-            reward -= 200.
+            reward -= 2  # 200.
             # keep q_loss
             info["destroy"] = 1.
             info["totally_controllable_ratio"] = 0.
@@ -201,14 +201,14 @@ class VoltageControl(MultiAgentEnv):
         # terminate if episode_limit is reached
         self.steps += 1
         self.sum_rewards += reward
-        if self.steps >= self.episode_limit or not solvable:
-            terminated = True
-        else:
-            terminated = False
+        truncated = self.steps >= self.episode_limit
+        terminated = not solvable
+        done = terminated or truncated
         if terminated:
             print (f"Episode terminated at time: {self.steps} with return: {self.sum_rewards:2.4f}.")
+        info["truncated"] = truncated
 
-        return reward, terminated, info
+        return reward, done, info
 
     def get_state(self):
         """return the global state for the power system
@@ -601,25 +601,28 @@ class VoltageControl(MultiAgentEnv):
         # line loss
         line_loss = np.sum(self.powergrid.res_line["pl_mw"])
         avg_line_loss = np.mean(self.powergrid.res_line["pl_mw"])
-        info["total_line_loss"] = line_loss
 
         # reactive power (q) loss
         q = self.powergrid.res_sgen["q_mvar"].sort_index().to_numpy(copy=True)
         q_loss = np.mean(np.abs(q))
-        info["q_loss"] = q_loss
 
         # reward function
         ## voltage barrier function
         v_loss = np.mean(self.voltage_barrier.step(v)) * self.voltage_weight
+        info["v_loss"] = v_loss
         ## add soft constraint for line or q
         if self.line_weight != None:
             loss = avg_line_loss * self.line_weight + v_loss
+            info["avg_line_loss"] = avg_line_loss * self.line_weight
+            info["q_loss"] = 0
         elif self.q_weight != None:
             loss = q_loss * self.q_weight + v_loss
+            info["q_loss"] = q_loss * self.q_weight
+            info["avg_line_loss"] = 0
         else:
             raise NotImplementedError("Please at least give one weight, either q_weight or line_weight.")
         reward = -loss
-
+        # print("v_loss: ", v_loss, "q_loss: ", q_loss * self.q_weight)
         # record destroy
         info["destroy"] = 0.0
 

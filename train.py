@@ -13,12 +13,12 @@ from utilities.trainer import PGTrainer
 
 parser = argparse.ArgumentParser(description="Train rl agent.")
 parser.add_argument("--save-path", type=str, nargs="?", default="C:/PDN_runs/MAPDN", help="Please enter the directory of saving model.")
-parser.add_argument("--alg", type=str, nargs="?", default="coma", help="Please enter the alg name.")
+parser.add_argument("--alg", type=str, nargs="?", default="maddpg", help="Please enter the alg name.")
 parser.add_argument("--env", type=str, nargs="?", default="var_voltage_control", help="Please enter the env name.")
-parser.add_argument("--alias", type=str, nargs="?", default="original", help="Please enter the alias for exp control.")
+parser.add_argument("--alias", type=str, nargs="?", default="line_loss", help="Please enter the alias for exp control.")
 parser.add_argument("--mode", type=str, nargs="?", default="distributed", help="Please enter the mode: distributed or decentralised.")
 parser.add_argument("--scenario", type=str, nargs="?", default="case33_3min_final", help="Please input the valid name of an environment scenario.")
-parser.add_argument("--voltage-barrier-type", type=str, nargs="?", default="l1", help="Please input the valid voltage barrier type: l1, courant_beltrami, l2, bowl or bump.")
+parser.add_argument("--voltage-barrier-type", type=str, nargs="?", default="bowl", help="Please input the valid voltage barrier type: l1, courant_beltrami, l2, bowl or bump.")
 argv = parser.parse_args()
 
 # load env args

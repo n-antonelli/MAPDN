@@ -28,7 +28,12 @@ class PGTester(object):
                   "bus_active": [], 
                   "bus_reactive": [], 
                   "bus_voltage": [],
-                  "line_loss": []
+                  "line_loss": [],
+                  "actions": [],
+                  "actual_actions": [],
+                  "v_loss": [],
+                  "q_loss": [],
+                  "avg_line_loss": [],
             }
 
         record["pv_active"].append(self.env._get_sgen_active())
@@ -37,6 +42,7 @@ class PGTester(object):
         record["bus_reactive"].append(self.env._get_res_bus_reactive())
         record["bus_voltage"].append(self.env._get_res_bus_v())
         record["line_loss"].append(self.env._get_res_line_loss())
+        #TODO: agregar vector de 0's con el tamaño de la cantidad de agentes
 
         for t in range(self.args.max_steps):
             if self.render:
@@ -45,6 +51,12 @@ class PGTester(object):
             state_ = prep_obs(state).contiguous().view(1, self.n_, self.obs_dim).to(self.device)
             action, _, _, _, hid = self.behaviour_net.get_actions(state_, status='test', exploration=False, actions_avail=th.tensor(self.env.get_avail_actions()), target=False, last_hid=last_hid)
             _, actual = translate_action(self.args, action, self.env)
+            ########################
+            a = action.detach().cpu().numpy().reshape(-1).copy()
+            record["actions"].append(a)
+            record["actual_actions"].append(actual)
+            ########################
+
             reward, done, info = self.env.step(actual, add_noise=False)
             done_ = done or t==self.args.max_steps-1
             record["pv_active"].append(self.env._get_sgen_active())
@@ -53,6 +65,9 @@ class PGTester(object):
             record["bus_reactive"].append(self.env._get_res_bus_reactive())
             record["bus_voltage"].append(self.env._get_res_bus_v())
             record["line_loss"].append(self.env._get_res_line_loss())
+            record["v_loss"].append(info["v_loss"])
+            record["q_loss"].append(info["q_loss"])
+            record["avg_line_loss"].append(info["avg_line_loss"])
             next_state = self.env.get_obs()
             # set the next state
             state = next_state

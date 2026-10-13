@@ -9,7 +9,7 @@
 "episodic": False
 "cuda": True
 "grad_clip_eps": 1.0 # activated when grad_clip=True
-"save_model_freq": 40 # episode
+"save_model_freq": 40 # episodes
 "replay_warmup": 0
 "policy_lrate": null
 "value_lrate": null
@@ -40,7 +40,7 @@
 "hid_size": 64
 "continuous": True # if the control variable is continuous
 "normalize_advantages": False
-"train_episodes_num": 400
+"train_episodes_num": 400 # total de episodios
 "behaviour_update_freq": 60 # transition update: steps / episodic update: episodes
 "target_update_freq": 120 # transition update: steps / episodic update: episodes
 "policy_update_epochs": 1
