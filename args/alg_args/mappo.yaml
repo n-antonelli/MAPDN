@@ -6,7 +6,7 @@ alg_args:
     "value_update_epochs": 10
     "policy_update_epochs": 10
     "lambda_": 0.95
-    "eps_clip": 0.6
+    "eps_clip": 0.2 # 0.6
     "value_loss_coef": 2.
     "reward_normalisation": True
     "normalize_advantages": True
@@ -14,3 +14,4 @@ alg_args:
     "action_enforcebound": True
     "behaviour_update_freq": 240 # transition update: steps / episodic update: episodes
     "target_update_freq": 480 # transition update: steps / episodic update: episodes
+    "grad_clip": True

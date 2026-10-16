@@ -80,7 +80,7 @@ class VoltageControl(MultiAgentEnv):
             self.n_actions = 1
             self.n_agents = len(self.base_powergrid.sgen)
         elif self.args.mode == "decentralised":
-            self.n_actions = len(self.base_powergrid.sgen)
+            self.n_actions = len(self.base_powergrid.sgen) # 6 acciones?
             self.n_agents = len( set( self.base_powergrid.bus["zone"].to_numpy(copy=True) ) ) - 1 # exclude the main zone
         agents_obs, state = self.reset()
 
@@ -189,7 +189,7 @@ class VoltageControl(MultiAgentEnv):
             q_loss = np.mean( np.abs(self.powergrid.sgen["q_mvar"]) )
             self.powergrid = last_powergrid
             reward, info = self._calc_reward()
-            reward -= 2  # 200.
+            reward -= 5  # 200.
             # keep q_loss
             info["destroy"] = 1.
             info["totally_controllable_ratio"] = 0.
@@ -201,8 +201,8 @@ class VoltageControl(MultiAgentEnv):
         # terminate if episode_limit is reached
         self.steps += 1
         self.sum_rewards += reward
-        truncated = self.steps >= self.episode_limit
-        terminated = not solvable
+        terminated = self.steps >= self.episode_limit
+        truncated = not solvable
         done = terminated or truncated
         if terminated:
             print (f"Episode terminated at time: {self.steps} with return: {self.sum_rewards:2.4f}.")
@@ -281,7 +281,7 @@ class VoltageControl(MultiAgentEnv):
                 obs = list()
                 if "demand" in self.state_space:
                     copy_zone_buses = copy.deepcopy(zone_buses)
-                    copy_zone_buses.loc[sgen_buses]["p_mw"] += pv
+                    copy_zone_buses.loc[sgen_buses]["p_mw"] += pv #para que agrega p_mw si después lo agrega a obs?
                     copy_zone_buses.loc[sgen_buses]["q_mvar"] += q
                     obs += list(copy_zone_buses.loc[:, "p_mw"].to_numpy(copy=True))
                     obs += list(copy_zone_buses.loc[:, "q_mvar"].to_numpy(copy=True))
@@ -608,6 +608,7 @@ class VoltageControl(MultiAgentEnv):
 
         # reward function
         ## voltage barrier function
+        # v_loss = np.mean(self.voltage_barrier.step(v)) * self.voltage_weight
         v_loss = np.mean(self.voltage_barrier.step(v)) * self.voltage_weight
         info["v_loss"] = v_loss
         ## add soft constraint for line or q

@@ -10,17 +10,17 @@
 "cuda": True
 "grad_clip_eps": 1.0 # activated when grad_clip=True
 "save_model_freq": 40 # episodes
-"replay_warmup": 0
+"replay_warmup": 0 #  probar --> 2000-4000 (8-16 episodios)
 "policy_lrate": null
 "value_lrate": null
 "mixer_lrate": null
 "target": True
-"target_lr": 0.1
+"target_lr": 0.01  # 0.1 ---> actualización suave de Polyak
 "entr": 1.0e-3
 "max_steps": 240
-"batch_size": 32 # transition update: steps / episodic update: episodes
+"batch_size": 240 #decentralised -> >240 / distributed -> 32 # transition update: steps / episodic update: episodes
 "replay": True
-"replay_buffer_size": 5.0e+3
+"replay_buffer_size": 2.0e+4 #83 epi (240 steps) 5.0e+3
 "agent_type": "rnn" # rnn/mlp
 "agent_id": True
 "shared_params": True # agent_id can be switched off if False
@@ -29,7 +29,7 @@
 "gaussian_policy": False
 "LOG_STD_MIN": 0.0 # activated only if gaussian_policy is True
 "LOG_STD_MAX": 0.5
-"fixed_policy_std": 1.0 # activated if gaussian policy is False, for exploration
+"fixed_policy_std": 0.3 # 1.0 # activated if gaussian policy is False, for exploration
 "hid_activation": "relu" # tanh/relu
 "init_type": "normal" # normal/orthogonal
 "init_std": 0.1
@@ -47,5 +47,7 @@
 "value_update_epochs": 10
 "mixer_update_epochs": null
 "reward_normalisation": True
+"fixed_reward_normalisation": False
+"reward_scale": 10
 "eval_freq": 20 # evaluation per xxx episodes
 "num_eval_episodes": 10 # number of episodes for an evaluation

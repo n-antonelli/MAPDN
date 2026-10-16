@@ -57,6 +57,7 @@ class PGTrainer(object):
 
     def policy_replay_process(self, stat):
         batch = self.replay_buffer.get_batch(self.args.batch_size)
+        print([t.last_step for t in batch].index(True))
         batch = self.behaviour_net.Transition(*zip(*batch))
         self.policy_transition_process(stat, batch)
 
@@ -83,6 +84,11 @@ class PGTrainer(object):
             self.policy_compute_grad(stat, (policy_loss, logits), False)
         param = self.policy_optimizer.param_groups[0]['params']
         policy_grad_norms = get_grad_norm(self.args, param)
+        #########
+        # norm_before = th.nn.utils.clip_grad_norm_(param, self.args.grad_clip_eps)  # devuelve la norma ANTES de recortar
+        # norm_after = get_grad_norm(self.args, param)
+        # print(norm_before.item(), norm_after.item())
+        #########
         self.policy_optimizer.step()
         stat['mean_train_policy_grad_norm'] = policy_grad_norms.item() # np.array(policy_grad_norms).mean()
         stat['mean_train_policy_loss'] = policy_loss.clone().mean().item()

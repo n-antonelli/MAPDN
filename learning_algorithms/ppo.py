@@ -21,8 +21,14 @@ class PPO(ReinforcementLearning):
         if self.args.continuous:
             means, log_stds, _ = behaviour_net.policy(state, last_hid=last_hids)
             if means.size(-1) > 1:
-                means_ = means.sum(dim=1, keepdim=True)
-                log_stds_ = log_stds.sum(dim=1, keepdim=True)
+                # means_ = means.sum(dim=1, keepdim=True)
+                # log_stds_ = log_stds.sum(dim=1, keepdim=True)
+                ############
+                mask = (actions_avail != 0).float().to(self.device)  # (b, n, a)
+                means_ = (means * mask).sum(dim=1, keepdim=True)
+                log_stds_ = (log_stds * mask).sum(dim=1, keepdim=True)
+                # print(log_stds_.exp())
+                ############
             else:
                 means_ = means
                 log_stds_ = log_stds
@@ -45,8 +51,10 @@ class PPO(ReinforcementLearning):
         # GAE -> advantage
         last_advantages = 0
         for i in reversed(range(rewards.size(0))):
+            ############
             if last_step[i]:
-                mask = 1.0 - done[i]
+                last_advantages = 0  # corta el acarreo entre episodios
+                mask = 1.0 - done[i]  # 0 si terminó de verdad, 1 si fue corte por tiempo
             else:
                 mask = 1.0
             deltas_ = rewards[i] + behaviour_net.args.gamma * old_next_values[i].detach() * mask - old_values[i]

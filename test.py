@@ -13,13 +13,13 @@ from utilities.tester import PGTester
 
 parser = argparse.ArgumentParser(description="Train rl agent.")
 parser.add_argument("--save-path", type=str, nargs="?", default="C:/PDN_runs/MAPDN", help="Please enter the directory of saving model.")
-parser.add_argument("--alg", type=str, nargs="?", default="maddpg", help="Please enter the alg name.")
+parser.add_argument("--alg", type=str, nargs="?", default="mappo", help="Please enter the alg name.")
 parser.add_argument("--env", type=str, nargs="?", default="var_voltage_control", help="Please enter the env name.")
-parser.add_argument("--alias", type=str, nargs="?", default="line_loss", help="Please enter the alias for exp control.")
-parser.add_argument("--mode", type=str, nargs="?", default="distributed", help="Please enter the mode: distributed or decentralised.")
+parser.add_argument("--alias", type=str, nargs="?", default="get_actions", help="Please enter the alias for exp control.")
+parser.add_argument("--mode", type=str, nargs="?", default="decentralised", help="Please enter the mode: distributed or decentralised.")
 parser.add_argument("--scenario", type=str, nargs="?", default="case33_3min_final", help="Please input the valid name of an environment scenario.")
 parser.add_argument("--voltage-barrier-type", type=str, nargs="?", default="bowl", help="Please input the valid voltage barrier type: l1, courant_beltrami, l2, bowl or bump.")
-parser.add_argument("--test-mode", type=str, nargs="?", default="single", help="Please input the valid test mode: single or batch.") #single
+parser.add_argument("--test-mode", type=str, nargs="?", default="4seasson", help="Please input the valid test mode: single or batch.") #single/4seasson/batch
 parser.add_argument("--test-day", type=int, nargs="?", default=880, help="Please input the day you would test if the test mode is single.") #730
 parser.add_argument("--render", action="store_true", help="Activate the rendering of the environment.")
 argv = parser.parse_args()
@@ -105,3 +105,8 @@ elif argv.test_mode == 'batch':
     record = test.batch_run(10)
     with open('test_record_'+log_name+'_'+argv.test_mode+'.pickle', 'wb') as f:
         pickle.dump(record, f, pickle.HIGHEST_PROTOCOL)
+elif argv.test_mode == '4seasson': # mitad del verano, otoño, invierno y primavera (730 -> 31 diciembre del 2° año)
+    for day in [730+45, 730+91+45, 730+91*2+45, 730+91*3+45]:
+        record = test.run(day, 00, 1)
+        with open('C:\\PDN_runs\\MAPDN\\eval_save\\test_' + log_name + f'_day{day}' + '.pickle', 'wb') as f:
+            pickle.dump(record, f, pickle.HIGHEST_PROTOCOL)

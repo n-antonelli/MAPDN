@@ -44,8 +44,15 @@ class EpisodeReplayBuffer(object):
         self.buffer.pop(0)
 
     def get_batch(self, batch_size):
+        # length = len(self.buffer)
+        # indices = np.random.choice(length, batch_size, replace=False)
+        ############
         length = len(self.buffer)
-        indices = np.random.choice(length, batch_size, replace=False)
+        if batch_size >= length:
+            indices = np.arange(length)  # orden temporal, sin mezclar
+        else:
+            indices = np.random.choice(length, batch_size, replace=False)
+        ############
         batch_buffer = []
         for i in indices:
             batch_buffer.extend(self.buffer[i])

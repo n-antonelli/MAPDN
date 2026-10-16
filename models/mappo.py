@@ -69,8 +69,13 @@ class MAPPO(Model):
         if self.args.continuous:
             means, log_stds, hiddens = self.policy(state, last_hid=last_hid) if not target else target_policy(state, last_hid=last_hid)
             if means.size(-1) > 1:
-                means_ = means.sum(dim=1, keepdim=True)
-                log_stds_ = log_stds.sum(dim=1, keepdim=True)
+                # means_ = means.sum(dim=1, keepdim=True)
+                # log_stds_ = log_stds.sum(dim=1, keepdim=True)
+                ############
+                mask = (actions_avail != 0).float().to(self.device)  # (b, n, a)
+                means_ = (means * mask).sum(dim=1, keepdim=True)
+                log_stds_ = (log_stds * mask).sum(dim=1, keepdim=True)
+                ############
             else:
                 means_ = means
                 log_stds_ = log_stds

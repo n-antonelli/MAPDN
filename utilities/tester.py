@@ -34,6 +34,7 @@ class PGTester(object):
                   "v_loss": [],
                   "q_loss": [],
                   "avg_line_loss": [],
+                  # "n_agent": 0,
             }
 
         record["pv_active"].append(self.env._get_sgen_active())
@@ -42,6 +43,7 @@ class PGTester(object):
         record["bus_reactive"].append(self.env._get_res_bus_reactive())
         record["bus_voltage"].append(self.env._get_res_bus_v())
         record["line_loss"].append(self.env._get_res_line_loss())
+        record["n_agent"] = self.n_
         #TODO: agregar vector de 0's con el tamaño de la cantidad de agentes
 
         for t in range(self.args.max_steps):
@@ -68,6 +70,7 @@ class PGTester(object):
             record["v_loss"].append(info["v_loss"])
             record["q_loss"].append(info["q_loss"])
             record["avg_line_loss"].append(info["avg_line_loss"])
+            # record["line_loss"].append(info["line_loss"])
             next_state = self.env.get_obs()
             # set the next state
             state = next_state

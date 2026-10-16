@@ -43,6 +43,7 @@ class Model(nn.Module):
              and len(trainer.replay_buffer.buffer)>=self.args.batch_size\
              and trainer.steps%self.args.behaviour_update_freq==0
             if replay_cond:
+                # print("buffer len:", len(trainer.replay_buffer.buffer), "steps:", trainer.steps)
                 for _ in range(self.args.value_update_epochs):
                     trainer.value_replay_process(stat)
                 for _ in range(self.args.policy_update_epochs):
@@ -316,4 +317,6 @@ class Model(nn.Module):
         hid = th.tensor(np.concatenate(batch.hid, axis=0), dtype=th.float).to(self.device)
         if self.args.reward_normalisation:
             reward = self.batchnorm(reward).to(self.device)
+        if self.args.fixed_reward_normalisation:
+            reward = reward * self.args.reward_scale
         return (state, action, log_prob_a, value, next_value, reward, next_state, done, last_step, action_avail, last_hid, hid)
