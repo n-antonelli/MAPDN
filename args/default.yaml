@@ -9,7 +9,7 @@
 "episodic": True # True para MAPPO/ False para MADDPG
 "cuda": True
 "grad_clip_eps": 1.0 # activated when grad_clip=True
-"save_model_freq": 40 # episodes
+"save_model_freq": 100 # episodes
 "replay_warmup": 0 #  probar --> 2000-4000 (8-16 episodios)
 "policy_lrate": null # EN MAPPO
 "value_lrate": null # EN MAPPO
@@ -18,7 +18,7 @@
 "target_lr": 0.01  # 0.1 ---> actualización suave de Polyak
 "entr": 1.0e-3
 "max_steps": 240
-"batch_size": 1 #decentralised-apisodic -> 1 / distributed -> 32 # transition update: steps / episodic update: episodes
+"batch_size": 4 #decentralised-apisodic -> 1 / distributed -> 32 # transition update: steps / episodic update: episodes
 "replay": True
 "replay_buffer_size": 2.0e+4 #83 epi (240 steps) 5.0e+3
 "agent_type": "rnn" # rnn/mlp
@@ -42,7 +42,7 @@
 "continuous": True # if the control variable is continuous
 "normalize_advantages": False  #EN MAPPO
 "train_episodes_num": 1000 # total de episodios
-"behaviour_update_freq": 1 #EN MAPPO transition update: steps / episodic update: episodes
+"behaviour_update_freq": 4 #EN MAPPO transition update: steps / episodic update: episodes
 "target_update_freq": 120 #EN MAPPO  transition update: steps / episodic update: episodes
 "policy_update_epochs": 1
 "value_update_epochs": 30

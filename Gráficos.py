@@ -156,20 +156,20 @@ if mode == 'train':
     plt.legend(loc='best')
     plt.show()
 
-    df["mean_train_ev"] = calcular_promedio_movil(df["mean_train_ev"], 20, mode)
-    df[["mean_train_ev"]].plot()
-    plt.title(f"{algoritmo}-{clase} - mean train ev")
-    plt.grid(True, alpha=0.3)
-    plt.xlabel("episode")
-    plt.ylabel("mean_train_ev")
-    plt.show()
-
     df["mean_train_policy_loss"] = calcular_promedio_movil(df["mean_train_policy_loss"], 20, mode)
     df[["mean_train_policy_loss"]].plot()
     plt.title(f"{algoritmo}-{clase} - mean train policy loss")
     plt.grid(True, alpha=0.3)
     plt.xlabel("episode")
     plt.ylabel("mean_train_policy_loss")
+    plt.show()
+
+    df["mean_train_ev"] = calcular_promedio_movil(df["mean_train_ev"], 20, mode)
+    df[["mean_train_ev"]].plot()
+    plt.title(f"{algoritmo}-{clase} - mean train ev")
+    plt.grid(True, alpha=0.3)
+    plt.xlabel("episode")
+    plt.ylabel("mean_train_ev")
     plt.show()
 
     df["mean_train_policy_grad_norm"] = calcular_promedio_movil(df["mean_train_policy_grad_norm"], 20, mode)
