@@ -6,24 +6,25 @@
 "gumbel_softmax": False
 "epsilon_softmax": False
 "softmax_eps": null
-"episodic": False
+"episodic": True # True para MAPPO/ False para MADDPG
 "cuda": True
 "grad_clip_eps": 1.0 # activated when grad_clip=True
 "save_model_freq": 40 # episodes
 "replay_warmup": 0 #  probar --> 2000-4000 (8-16 episodios)
-"policy_lrate": null
-"value_lrate": null
+"policy_lrate": null # EN MAPPO
+"value_lrate": null # EN MAPPO
 "mixer_lrate": null
 "target": True
 "target_lr": 0.01  # 0.1 ---> actualización suave de Polyak
 "entr": 1.0e-3
 "max_steps": 240
-"batch_size": 240 #decentralised -> >240 / distributed -> 32 # transition update: steps / episodic update: episodes
+"batch_size": 1 #decentralised-apisodic -> 1 / distributed -> 32 # transition update: steps / episodic update: episodes
 "replay": True
 "replay_buffer_size": 2.0e+4 #83 epi (240 steps) 5.0e+3
 "agent_type": "rnn" # rnn/mlp
-"agent_id": True
-"shared_params": True # agent_id can be switched off if False
+"agent_id": True  # concatena un one-hot a la observación
+"shared_params": False # False -> 1 crítico y 1 actor p/c agente. agent_id can be switched off if False
+"shared_critic": True
 "layernorm": True # add layernorm on the first layer over inputs
 "mixer": False
 "gaussian_policy": False
@@ -39,15 +40,15 @@
 "gamma": 0.99
 "hid_size": 64
 "continuous": True # if the control variable is continuous
-"normalize_advantages": False
-"train_episodes_num": 400 # total de episodios
-"behaviour_update_freq": 60 # transition update: steps / episodic update: episodes
-"target_update_freq": 120 # transition update: steps / episodic update: episodes
+"normalize_advantages": False  #EN MAPPO
+"train_episodes_num": 1000 # total de episodios
+"behaviour_update_freq": 1 #EN MAPPO transition update: steps / episodic update: episodes
+"target_update_freq": 120 #EN MAPPO  transition update: steps / episodic update: episodes
 "policy_update_epochs": 1
-"value_update_epochs": 10
+"value_update_epochs": 30
 "mixer_update_epochs": null
-"reward_normalisation": True
+"reward_normalisation": False
 "fixed_reward_normalisation": False
 "reward_scale": 10
-"eval_freq": 20 # evaluation per xxx episodes
+"eval_freq": 50 # evaluation per xxx episodes
 "num_eval_episodes": 10 # number of episodes for an evaluation

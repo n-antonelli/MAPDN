@@ -63,3 +63,6 @@ class EpisodeReplayBuffer(object):
         if est_len > self.size:
             self.offset()
         self.buffer.append(episode)
+
+    def clear(self):
+        self.buffer = []

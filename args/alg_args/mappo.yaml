@@ -2,7 +2,7 @@ alg: "mappo"
 
 alg_args:
     "policy_lrate": 1.0e-4
-    "value_lrate": 1.0e-4
+    "value_lrate": 1.0e-3
     "value_update_epochs": 10
     "policy_update_epochs": 10
     "lambda_": 0.95
@@ -12,6 +12,6 @@ alg_args:
     "normalize_advantages": True
     "gaussian_policy": False
     "action_enforcebound": True
-    "behaviour_update_freq": 240 # transition update: steps / episodic update: episodes
+    "behaviour_update_freq": 1 # transition update: steps / episodic update: episodes
     "target_update_freq": 480 # transition update: steps / episodic update: episodes
     "grad_clip": True

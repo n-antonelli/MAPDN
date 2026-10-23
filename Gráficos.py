@@ -19,17 +19,9 @@ topology = 'case33_3min_final'
 clase = 'decentralised'  # distributed/decentralised
 algoritmo = "mappo" # maddpg/mappo
 loss_type = 'bowl'
-alias = 'get_actions'
+alias = 'get_actions-batch-episodic-returns-shared-lrate-sin_norm'
 nombre_modelo = f'var_voltage_control-{topology}-{clase}-{algoritmo}-{loss_type}-{alias}'
 
-# entrenamiento
-# evento = '1791473312'
-# evaluación
-# dia = 'day880' #'batch'/'day900'
-
-# actual_date = datetime.now().date()
-# ventana = 50
-# device = 'oficina'
 if mode == 'train':
     carpeta = 'train_save'
 else:
@@ -37,7 +29,6 @@ else:
 url = f"C:\\PDN_runs\\MAPDN\\{carpeta}"
 # url = "C:\\Users\\Usuario\\Documents\\Programas\MAPDN\\tensorboard"
 # if device == 'oficina':
-#
 # # else:
 # #     url = 'C:\\Users\\Nicolas\\Documents\\UNSL\\Programas\\MARLlib-PDN'
 
@@ -110,69 +101,80 @@ if mode == 'train':
     # cantidad_agentes = len(train_archive['pv_active'])
     # agents = [f'agent_{i + 1}' for i in range(cantidad_agentes)]
 
-    mean_train_reward = df["mean_train_reward"] # calcular_promedio_movil(df["mean_train_reward"], 20, mode)#
+    mean_train_reward = calcular_promedio_movil(df["mean_train_reward"], 20, mode)#
     test_clean = df['mean_test_reward'].dropna()
     plt.plot(mean_train_reward, label='mean_train_reward', alpha=0.35, color='gray')
     plt.plot(test_clean.index, test_clean, marker='o', linestyle='-', color='tab:blue', label='mean_test_reward')
-    plt.title(f"mean train test reward")
+    plt.title(f"{algoritmo}-{clase} - mean train test reward")
     plt.grid(True, alpha=0.3)
     plt.legend(loc='best')
     plt.xlabel("episode")
     plt.ylabel("reward")
     plt.show()
 
-    mean_train_totally_cr = df["mean_train_totally_controllable_ratio"] #calcular_promedio_movil(df["mean_train_totally_controllable_ratio"], 20, mode)  #
+    mean_train_totally_cr = calcular_promedio_movil(df["mean_train_totally_controllable_ratio"], 20, mode)  #
     test_clean = df['mean_test_totally_controllable_ratio'].dropna()
     plt.plot(mean_train_totally_cr, label='mean_train_totally_cr', alpha=0.35, color='gray')
     plt.plot(test_clean.index, test_clean, marker='o', linestyle='-', color='tab:blue', label='mean_test_totally_cr')
-    plt.title(f"mean train/test totally controllable ratio")
+    plt.title(f"{algoritmo}-{clase} - mean train/test totally controllable ratio")
     plt.grid(True, alpha=0.3)
     plt.xlabel("episode")
     plt.ylabel("mean_train/test_totally_cr")
     plt.legend(loc='best')
     plt.show()
 
-    mean_train_avg_line_loss = df["mean_train_avg_line_loss"]  # calcular_promedio_movil(df["mean_train_totally_controllable_ratio"], 20, mode)  #
+    mean_train_avg_line_loss = calcular_promedio_movil(df["mean_train_avg_line_loss"], 20, mode)  #
     test_clean = df['mean_test_avg_line_loss'].dropna()
     plt.plot(mean_train_avg_line_loss, label='mean_train_avg_line_loss', alpha=0.35, color='gray')
     plt.plot(test_clean.index, test_clean, marker='o', linestyle='-', color='tab:blue', label='mean_test_avg_line_loss')
-    plt.title(f"mean train/test avg line loss")
+    plt.title(f"{algoritmo}-{clase} - mean train/test avg line loss")
     plt.grid(True, alpha=0.3)
     plt.xlabel("episode")
     plt.ylabel("mean_train/test_avg_line_loss")
     plt.legend(loc='best')
     plt.show()
 
-    mean_train_percentage_of_v_ooc = df["mean_train_percentage_of_v_out_of_control"] # calcular_promedio_movil(df["mean_train_percentage_of_v_out_of_control"], 20, mode)  #
+    mean_train_percentage_of_v_ooc = calcular_promedio_movil(df["mean_train_percentage_of_v_out_of_control"], 20, mode)  #
     test_clean = df['mean_test_percentage_of_v_out_of_control'].dropna()
     plt.plot(mean_train_percentage_of_v_ooc, label='mean_train_percentage_of_v_ooc', alpha=0.35, color='gray')
     plt.plot(test_clean.index, test_clean, marker='o', linestyle='-', color='tab:blue', label='mean_test_percentage_of_v_ooc')
-    plt.title(f"mean train/test totally v out of control")
+    plt.title(f"{algoritmo}-{clase} - mean train/test totally v out of control")
     plt.grid(True, alpha=0.3)
     plt.xlabel("episode")
     plt.ylabel("mean_train_percentage_of_v_out_of_control")
     plt.show()
 
+    df["mean_train_value_loss"] = calcular_promedio_movil(df["mean_train_value_loss"], 20, mode)
     mean_train_value_loss = df["mean_train_value_loss"]
     test_clean = df['mean_train_destroy']*3
     plt.plot(mean_train_value_loss, label='mean_train_value_loss')
     plt.plot(test_clean.index, test_clean, linestyle='-', color='orange', label='destroy')
-    plt.title(f"mean train value loss")
+    plt.title(f"{algoritmo}-{clase} - mean train value loss")
     plt.xlabel("episode")
     plt.ylabel("mean_train_value_loss")
     plt.grid(True, alpha=0.3)
     plt.legend(loc='best')
     plt.show()
 
+    df["mean_train_ev"] = calcular_promedio_movil(df["mean_train_ev"], 20, mode)
+    df[["mean_train_ev"]].plot()
+    plt.title(f"{algoritmo}-{clase} - mean train ev")
+    plt.grid(True, alpha=0.3)
+    plt.xlabel("episode")
+    plt.ylabel("mean_train_ev")
+    plt.show()
+
+    df["mean_train_policy_loss"] = calcular_promedio_movil(df["mean_train_policy_loss"], 20, mode)
     df[["mean_train_policy_loss"]].plot()
-    plt.title(f"mean train policy loss")
+    plt.title(f"{algoritmo}-{clase} - mean train policy loss")
     plt.grid(True, alpha=0.3)
     plt.xlabel("episode")
     plt.ylabel("mean_train_policy_loss")
     plt.show()
 
+    df["mean_train_policy_grad_norm"] = calcular_promedio_movil(df["mean_train_policy_grad_norm"], 20, mode)
     df[["mean_train_policy_grad_norm"]].plot()
-    plt.title(f"mean train policy grad norm")
+    plt.title(f"{algoritmo}-{clase} - mean train policy grad norm")
     plt.grid(True, alpha=0.3)
     plt.xlabel("episode")
     plt.ylabel("mean_train_policy_grad_norm")
@@ -194,7 +196,7 @@ elif mode == 'test':
         match = re.search(r"day(\d+)", ruta)
         dia = match.group(1)
         figli, axli = plt.subplots(2, 1, figsize=(12, 6))
-        # figli.tittle(f'día {i}')
+        figli.suptitle(f'{algoritmo}-{clase}')
         axli[0].set_title(f"bus_voltage-día {dia}")
         axli[1].set_title(f"line_loss-día {dia}")
         axli[0].plot(range(0, len(np.asarray(test_archive["bus_voltage"]))), np.asarray(test_archive["bus_voltage"]), label='bus_voltage')
@@ -210,6 +212,7 @@ elif mode == 'test':
         figli.show()
 
         figlo, axlo = plt.subplots(1, 1, figsize=(12, 6))
+        figlo.suptitle(f'{algoritmo}-{clase}')
         axlo.set_title(f'v_loss-día {dia}')
         # axlo[1].set_title('q_loss')
         # axlo0 = axlo[0].twinx()
@@ -236,8 +239,9 @@ elif mode == 'test':
             T, n = P.shape
             h = np.arange(T) * step_min / 60  # horas del día
             q_lim = np.abs(Q).max() * 1.1
-            # n = test_archive["n_agent"]
+            n = test_archive["n_agent"]
             fig, axs = plt.subplots(n, 2, figsize=(13, 2.0 * n), sharex=True)
+            fig.suptitle(f'{algoritmo}-{clase}')
 
             if clase=='distributed':
                 pv_p_agente = ['zona1-n13', 'zona1-n18', 'zona2-n22', 'zona3-n25', 'zona4-n29', 'zona4-n33']
@@ -314,6 +318,7 @@ elif mode == 'test':
         # avg_v_invierno = np.append(avg_v_invierno, avg_v_invierno[0])
         # Generar la gráfica polar comparativa
         fig1, ax1 = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+        fig1.suptitle(f'{algoritmo}-{clase}')
         ax1.set_theta_offset(np.pi / 2)
         ax1.set_theta_direction(-1)
         # Configurar límites radiales
@@ -384,7 +389,7 @@ elif mode == 'test':
         # avg_v_invierno = np.append(avg_v_invierno, avg_v_invierno[0])
         # Generar la gráfica polar comparativa
         fig2, ax2 = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
-        # fig1.tittle(f'día {i}')
+        fig2.suptitle(f'{algoritmo}-{clase}')
         ax2.set_theta_offset(np.pi / 2)
         ax2.set_theta_direction(-1)
         # Configurar límites radiales

@@ -60,11 +60,17 @@ class PPO(ReinforcementLearning):
             deltas_ = rewards[i] + behaviour_net.args.gamma * old_next_values[i].detach() * mask - old_values[i]
             last_advantages = deltas_ + behaviour_net.args.gamma * behaviour_net.args.lambda_ * last_advantages * mask
             advantages[i] = last_advantages
-        done = done.to(self.device)
-        returns = rewards + behaviour_net.args.gamma * (1 - done) * next_values.detach()
+        # done = done.to(self.device)
+        # returns = rewards + behaviour_net.args.gamma * (1 - done) * next_values.detach()
         # normalise advantage
         if behaviour_net.args.normalize_advantages:
             advantages = self.batchnorm(advantages)
+        returns = (advantages + old_values).detach()
+        with th.no_grad():
+            self.last_ev = (1 - (returns - values).var() / (returns.var() + 1e-8)).item()
+        # print('ev:', self.ev)
+        # print('returns: ', returns.mean(), 'old_values: ', old_values.mean())
+        ############
         # policy loss
         assert ratios.size() == advantages.size()
         surr1 = ratios * advantages.detach()

@@ -39,10 +39,14 @@ class Model(nn.Module):
     def transition_update(self, trainer, trans, stat):
         if self.args.replay:
             trainer.replay_buffer.add_experience(trans)
-            replay_cond = trainer.steps>self.args.replay_warmup\
-             and len(trainer.replay_buffer.buffer)>=self.args.batch_size\
-             and trainer.steps%self.args.behaviour_update_freq==0
+            ################
+            # replay_cond = trainer.steps>self.args.replay_warmup\
+            #  and len(trainer.replay_buffer.buffer)>=self.args.batch_size\
+            #  and trainer.steps%self.args.behaviour_update_freq==0
+            replay_cond = trans.last_step and len(trainer.replay_buffer.buffer) >= self.args.batch_size
+            ################
             if replay_cond:
+                # print('bathc_size: ',self.args.batch_size)
                 # print("buffer len:", len(trainer.replay_buffer.buffer), "steps:", trainer.steps)
                 for _ in range(self.args.value_update_epochs):
                     trainer.value_replay_process(stat)
@@ -77,6 +81,8 @@ class Model(nn.Module):
              and len(trainer.replay_buffer.buffer)>=self.args.batch_size\
              and trainer.episodes%self.args.behaviour_update_freq==0
             if replay_cond:
+                # print('bathc_size: ', self.args.batch_size)
+                # print("buffer len:", len(trainer.replay_buffer.buffer), "steps:", trainer.steps)
                 for _ in range(self.args.value_update_epochs):
                     trainer.value_replay_process(stat)
                 for _ in range(self.args.policy_update_epochs):
@@ -84,6 +90,9 @@ class Model(nn.Module):
                 if self.args.mixer:
                     for _ in range(self.args.mixer_update_epochs):
                         trainer.mixer_replay_process(stat)
+                # clear replay buffer for on-policy algorithm
+                if self.__class__.__name__ in ["COMA", "IAC", "IPPO", "MAPPO"]:
+                    trainer.replay_buffer.clear()
         else:
             episode = self.Transition(*zip(*episode))
             episode_cond = trainer.episodes%self.args.behaviour_update_freq==0
@@ -135,8 +144,11 @@ class Model(nn.Module):
             if self.args.gaussian_policy:
                 log_stds = th.stack(log_stds, dim=1)
             else:
-                log_stds = th.zeros_like(means).to(self.device)
-
+                ############
+                # log_stds = th.zeros_like(means).to(self.device)
+                log_stds = th.log(th.ones_like(means) * self.args.fixed_policy_std).to(self.device)
+                ############
+            # print('last_hid: ', last_hid.shape)
         return means, log_stds, hiddens
 
     def value(self, obs, act, last_act=None, last_hid=None):
@@ -197,7 +209,7 @@ class Model(nn.Module):
 
     def train_process(self, stat, trainer):
         stat_train = {'mean_train_reward': 0}
-
+        # print(trainer.episodes)
         if self.args.episodic:
             episode = []
 
@@ -206,6 +218,7 @@ class Model(nn.Module):
 
         # init hidden states
         last_hid = self.policy_dicts[0].init_hidden()
+        # print('init_hidden: ', self.policy_dicts[0].init_hidden())
 
         for t in range(self.args.max_steps):
             # current state, action, value

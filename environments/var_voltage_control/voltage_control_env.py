@@ -80,7 +80,7 @@ class VoltageControl(MultiAgentEnv):
             self.n_actions = 1
             self.n_agents = len(self.base_powergrid.sgen)
         elif self.args.mode == "decentralised":
-            self.n_actions = len(self.base_powergrid.sgen) # 6 acciones?
+            self.n_actions = len(self.base_powergrid.sgen) # 6 acciones disponibles
             self.n_agents = len( set( self.base_powergrid.bus["zone"].to_numpy(copy=True) ) ) - 1 # exclude the main zone
         agents_obs, state = self.reset()
 
@@ -97,7 +97,7 @@ class VoltageControl(MultiAgentEnv):
         """reset the env
         """
         # reset the time step, cumulative rewards and obs history
-        self.steps = 1
+        self.steps = 0 # 1
         self.sum_rewards = 0
         if self.history > 1:
             self.obs_history = {i: [] for i in range(self.n_agents)}
@@ -138,7 +138,7 @@ class VoltageControl(MultiAgentEnv):
         """manual reset the initial date
         """
         # reset the time step, cumulative rewards and obs history
-        self.steps = 1
+        self.steps = 0 # 1
         self.sum_rewards = 0
         if self.history > 1:
             self.obs_history = {i: [] for i in range(self.n_agents)}
@@ -201,11 +201,11 @@ class VoltageControl(MultiAgentEnv):
         # terminate if episode_limit is reached
         self.steps += 1
         self.sum_rewards += reward
-        terminated = self.steps >= self.episode_limit
+        time_limit = self.steps >= self.episode_limit
         truncated = not solvable
-        done = terminated or truncated
-        if terminated:
-            print (f"Episode terminated at time: {self.steps} with return: {self.sum_rewards:2.4f}.")
+        done = time_limit or truncated
+        if time_limit:
+            print (f"return: {self.sum_rewards:2.4f}.") # Episode terminated at time: {self.steps} with return:
         info["truncated"] = truncated
 
         return reward, done, info
@@ -623,7 +623,7 @@ class VoltageControl(MultiAgentEnv):
         else:
             raise NotImplementedError("Please at least give one weight, either q_weight or line_weight.")
         reward = -loss
-        # print("v_loss: ", v_loss, "q_loss: ", q_loss * self.q_weight)
+        # print("v_loss: ", v_loss, "line_loss: ", avg_line_loss * self.line_weight)
         # record destroy
         info["destroy"] = 0.0
 

@@ -56,12 +56,18 @@ class PGTrainer(object):
             param.grad.data.clamp_(-self.args.grad_clip_eps, self.args.grad_clip_eps)
 
     def policy_replay_process(self, stat):
+        # print('policy_replay_process')
         batch = self.replay_buffer.get_batch(self.args.batch_size)
-        print([t.last_step for t in batch].index(True))
+        ################
+        # print('last_step: ', [t.last_step for t in batch].index(True))
+        # ls = [t.last_step for t in batch]
+        # print(len(batch), sum(ls), ls.index(True))
+        ################
         batch = self.behaviour_net.Transition(*zip(*batch))
         self.policy_transition_process(stat, batch)
 
     def value_replay_process(self, stat):
+        # print('value_replay_process')
         batch = self.replay_buffer.get_batch(self.args.batch_size)
         batch = self.behaviour_net.Transition(*zip(*batch))
         self.value_transition_process(stat, batch)
@@ -72,6 +78,7 @@ class PGTrainer(object):
         self.mixer_transition_process(stat, batch)
 
     def policy_transition_process(self, stat, trans):
+        # print('policy_transition_process')
         if self.args.continuous:
             policy_loss, _, logits = self.get_loss(trans)
             means, log_stds = logits
@@ -94,6 +101,7 @@ class PGTrainer(object):
         stat['mean_train_policy_loss'] = policy_loss.clone().mean().item()
 
     def value_transition_process(self, stat, trans):
+        # print('value_transition_process')
         _, value_loss, _ = self.get_loss(trans)
         self.value_optimizer.zero_grad()
         self.value_compute_grad(value_loss, False)
@@ -102,6 +110,7 @@ class PGTrainer(object):
         self.value_optimizer.step()
         stat['mean_train_value_grad_norm'] = value_grad_norms.item()
         stat['mean_train_value_loss'] = value_loss.clone().mean().item()
+        stat['mean_train_ev'] = self.behaviour_net.rl.last_ev
 
     def mixer_transition_process(self, stat, trans):
         _, value_loss, _ = self.get_loss(trans)

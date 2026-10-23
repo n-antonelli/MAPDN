@@ -24,7 +24,10 @@ class MAPPO(Model):
         else:
             input_shape = self.obs_dim * self.n_ # it is a v(s) rather than q(s, a)
         output_shape = 1
-        if self.args.shared_params:
+        ###########
+        # if self.args.shared_params:
+        if self.args.shared_critic:
+            ###########
             self.value_dicts = nn.ModuleList( [ MLPCritic(input_shape, output_shape, self.args) ] )
         else:
             self.value_dicts = nn.ModuleList( [ MLPCritic(input_shape, output_shape, self.args) for _ in range(self.n_) ] )
@@ -48,8 +51,10 @@ class MAPPO(Model):
             inp = th.cat( (obs, agent_ids), dim=-1 ) # shape = (b, n, o*n+n)
         else:
             inp = obs
-        
-        if self.args.shared_params:
+        ###########
+        # if self.args.shared_params:
+        if self.args.shared_critic:
+            ###########
             inputs = inp.contiguous().view(batch_size*self.n_, -1)
             agent_value = self.value_dicts[0]
             values, _ = agent_value(inputs, None)
