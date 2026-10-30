@@ -19,7 +19,7 @@ topology = 'case33_3min_final'
 clase = 'decentralised'  # distributed/decentralised
 algoritmo = "mappo" # maddpg/mappo
 loss_type = 'bowl'
-alias = 'get_actions-batch-episodic-returns-shared-lrate-sin_norm'
+alias = 'get_actions-batch-episodic-returns-shared-lrate-sin_norm-480'
 nombre_modelo = f'var_voltage_control-{topology}-{clase}-{algoritmo}-{loss_type}-{alias}'
 
 if mode == 'train':
@@ -101,6 +101,7 @@ if mode == 'train':
     # cantidad_agentes = len(train_archive['pv_active'])
     # agents = [f'agent_{i + 1}' for i in range(cantidad_agentes)]
 
+    ####### train/test #######
     mean_train_reward = calcular_promedio_movil(df["mean_train_reward"], 20, mode)#
     test_clean = df['mean_test_reward'].dropna()
     plt.plot(mean_train_reward, label='mean_train_reward', alpha=0.35, color='gray')
@@ -144,8 +145,9 @@ if mode == 'train':
     plt.ylabel("mean_train_percentage_of_v_out_of_control")
     plt.show()
 
+    ###### train #######
     df["mean_train_value_loss"] = calcular_promedio_movil(df["mean_train_value_loss"], 20, mode)
-    mean_train_value_loss = df["mean_train_value_loss"]
+    mean_train_value_loss = df["mean_train_value_loss"].dropna()
     test_clean = df['mean_train_destroy']*3
     plt.plot(mean_train_value_loss, label='mean_train_value_loss')
     plt.plot(test_clean.index, test_clean, linestyle='-', color='orange', label='destroy')
@@ -157,7 +159,8 @@ if mode == 'train':
     plt.show()
 
     df["mean_train_policy_loss"] = calcular_promedio_movil(df["mean_train_policy_loss"], 20, mode)
-    df[["mean_train_policy_loss"]].plot()
+    mean_train_policy_loss = df["mean_train_policy_loss"].dropna()
+    mean_train_policy_loss.plot()
     plt.title(f"{algoritmo}-{clase} - mean train policy loss")
     plt.grid(True, alpha=0.3)
     plt.xlabel("episode")
@@ -165,7 +168,8 @@ if mode == 'train':
     plt.show()
 
     df["mean_train_ev"] = calcular_promedio_movil(df["mean_train_ev"], 20, mode)
-    df[["mean_train_ev"]].plot()
+    mean_train_ev = df["mean_train_ev"].dropna()
+    mean_train_ev.plot()
     plt.title(f"{algoritmo}-{clase} - mean train ev")
     plt.grid(True, alpha=0.3)
     plt.xlabel("episode")
@@ -173,7 +177,8 @@ if mode == 'train':
     plt.show()
 
     df["mean_train_policy_grad_norm"] = calcular_promedio_movil(df["mean_train_policy_grad_norm"], 20, mode)
-    df[["mean_train_policy_grad_norm"]].plot()
+    mean_train_policy_grad_norm = df["mean_train_policy_grad_norm"].dropna()
+    mean_train_policy_grad_norm.plot()
     plt.title(f"{algoritmo}-{clase} - mean train policy grad norm")
     plt.grid(True, alpha=0.3)
     plt.xlabel("episode")

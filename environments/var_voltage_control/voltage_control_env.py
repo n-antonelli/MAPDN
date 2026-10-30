@@ -178,17 +178,18 @@ class VoltageControl(MultiAgentEnv):
     def step(self, actions, add_noise=True):
         """function for the interaction between agent and the env each time step
         """
+        action_dict = actions
         last_powergrid = copy.deepcopy(self.powergrid)
 
         # check whether the power balance is unsolvable
         solvable = self._take_action(actions)
         if solvable:
             # get the reward of current actions
-            reward, info = self._calc_reward()
+            reward, info = self._calc_reward(action_dict)
         else:
             q_loss = np.mean( np.abs(self.powergrid.sgen["q_mvar"]) )
             self.powergrid = last_powergrid
-            reward, info = self._calc_reward()
+            reward, info = self._calc_reward(action_dict)
             reward -= 5  # 200.
             # keep q_loss
             info["destroy"] = 1.
@@ -200,13 +201,20 @@ class VoltageControl(MultiAgentEnv):
 
         # terminate if episode_limit is reached
         self.steps += 1
-        self.sum_rewards += reward
+        self.sum_rewards += reward #sum(reward.values())
         time_limit = self.steps >= self.episode_limit
         truncated = not solvable
         done = time_limit or truncated
-        if time_limit:
-            print (f"return: {self.sum_rewards:2.4f}.") # Episode terminated at time: {self.steps} with return:
+        # if time_limit:
+        #     print (f"return: {self.sum_rewards:2.4f}.") # Episode terminated at time: {self.steps} with return:
         info["truncated"] = truncated
+        # llenado de variables vacías para que no se vacíen los datos salteados
+        # info["mean_train_policy_grad_norm"] = -1
+        # info["mean_train_policy_loss"] = -1
+        # info["mean_train_value_grad_norm"] = -1
+        # info["mean_train_value_loss"] = -1
+        # info["mean_train_ev"] = -1
+        # info["mean_train_entropy"] = -1
 
         return reward, done, info
 
@@ -574,7 +582,7 @@ class VoltageControl(MultiAgentEnv):
         reactive_power_constraint = np.sqrt(self.s_max**2 - active_power**2)
         return reactive_power_constraint * reactive_actions
     
-    def _calc_reward(self, info={}):
+    def _calc_reward(self, action_dict, info={}):
         """reward function
         consider 5 possible choices on voltage barrier functions:
             l1
@@ -597,7 +605,8 @@ class VoltageControl(MultiAgentEnv):
         info["average_voltage"] = np.mean(v)
         info["max_voltage_drop_deviation"] = np.max( (v < self.v_lower) * (self.v_lower - v) )
         info["max_voltage_rise_deviation"] = np.max( (v > self.v_upper) * (v - self.v_upper) )
-
+        #############
+        ###### Original #######
         # line loss
         line_loss = np.sum(self.powergrid.res_line["pl_mw"])
         avg_line_loss = np.mean(self.powergrid.res_line["pl_mw"])
@@ -606,9 +615,8 @@ class VoltageControl(MultiAgentEnv):
         q = self.powergrid.res_sgen["q_mvar"].sort_index().to_numpy(copy=True)
         q_loss = np.mean(np.abs(q))
 
-        # reward function
+        # # reward function
         ## voltage barrier function
-        # v_loss = np.mean(self.voltage_barrier.step(v)) * self.voltage_weight
         v_loss = np.mean(self.voltage_barrier.step(v)) * self.voltage_weight
         info["v_loss"] = v_loss
         ## add soft constraint for line or q
@@ -624,6 +632,44 @@ class VoltageControl(MultiAgentEnv):
             raise NotImplementedError("Please at least give one weight, either q_weight or line_weight.")
         reward = -loss
         # print("v_loss: ", v_loss, "line_loss: ", avg_line_loss * self.line_weight)
+
+        ###### Modificación #######
+        # reward = dict()
+        # v_losses = {}
+        # line_losses = {}
+        # q_losses = {}
+        #
+        # zones = [f"zone{i}" for i in range(1, self.n_agents + 1)] + ["main"]
+        #
+        # for zone in zones:
+        #     # --- Cálculo de V-Loss ---
+        #     v_zone = self.powergrid.res_bus["vm_pu"].loc[self.powergrid.bus["zone"] == zone]
+        #     v_losses[zone] = np.mean(self.voltage_barrier.step(v_zone))
+        #     # --- Cálculo de Line-Loss (con mapeo to_bus para evitar el error 33 vs 32) ---
+        #     buses_in_zone = self.powergrid.bus.index[self.powergrid.bus["zone"] == zone]
+        #     p_zone_lines = self.powergrid.res_line["pl_mw"].loc[self.powergrid.line["to_bus"].isin(buses_in_zone)]
+        #     line_losses[zone] = np.mean(np.abs(p_zone_lines)) if not p_zone_lines.empty else 0.0
+        #     # --- Cálculo de Q-Loss (Sgen) ---
+        #     q_vals = self.powergrid.res_sgen["q_mvar"].loc[self.powergrid.sgen["name"] == zone]
+        #     # Manejo de NaNs: si no hay sgen o es NaN, ponemos 0.0
+        #     q_losses[zone] = np.nan_to_num(np.mean(np.abs(q_vals))) if not q_vals.empty else 0.0
+        # if np.isnan(q_losses["main"]):
+        #     q_losses["main"] = 0.0
+        # # 2. Asignamos los rewards a los agentes usando el mapeo de nombres
+        # for agent_name in action_dict.keys():
+        #     # Si el agente se llama 'agent_zone_1', la zona es 'zone_1'
+        #     zone_id = agent_name.replace("agent_", "").replace("_", "")
+        #     # Mezclamos pérdida local + pérdida de la cabecera (main)
+        #     v_total = v_losses[zone_id] + v_losses["main"] * self.main_weight/len(action_dict) # se divide por cantidad de agentes para que el peso del main_loss no dependa de la cantidad de agentes
+        #     if self.line_weight is not None:
+        #         l_total = line_losses[zone_id] + line_losses["main"] * self.main_weight/len(action_dict)
+        #         loss = l_total * self.line_weight + v_total * self.voltage_weight
+        #     else:
+        #         q_total = q_losses[zone_id] + q_losses["main"] * self.main_weight/len(action_dict)
+        #         loss = q_total * self.q_weight + v_total * self.voltage_weight
+        #     reward[agent_name] = -float(loss)
+        #############
+
         # record destroy
         info["destroy"] = 0.0
 

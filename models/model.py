@@ -77,9 +77,9 @@ class Model(nn.Module):
     def episode_update(self, trainer, episode, stat):
         if self.args.replay:
             trainer.replay_buffer.add_experience(episode)
-            replay_cond = trainer.episodes>self.args.replay_warmup\
-             and len(trainer.replay_buffer.buffer)>=self.args.batch_size\
-             and trainer.episodes%self.args.behaviour_update_freq==0
+            replay_cond = trainer.episodes>self.args.replay_warmup \
+                          and len(trainer.replay_buffer.buffer)>=self.args.batch_size \
+                          and trainer.episodes%self.args.behaviour_update_freq==0
             if replay_cond:
                 # print('bathc_size: ', self.args.batch_size)
                 # print("buffer len:", len(trainer.replay_buffer.buffer), "steps:", trainer.steps)
@@ -93,6 +93,8 @@ class Model(nn.Module):
                 # clear replay buffer for on-policy algorithm
                 if self.__class__.__name__ in ["COMA", "IAC", "IPPO", "MAPPO"]:
                     trainer.replay_buffer.clear()
+            # print('replay_buffer', len(trainer.replay_buffer.buffer))
+            # print(trainer.episodes)
         else:
             episode = self.Transition(*zip(*episode))
             episode_cond = trainer.episodes%self.args.behaviour_update_freq==0
@@ -272,9 +274,23 @@ class Model(nn.Module):
             key_name = k.split('_')
             if key_name[0] == 'mean':
                 stat_train[k] = v / float(t+1)
+        # print(stat_train.keys())
         stat.update(stat_train)
         if self.args.episodic:
             self.episode_update(trainer, episode, stat)
+            ############
+            # relleno de variables que solo están dentro de trainer.py
+            keys = ['mean_train_value_loss', 'mean_train_policy_loss',
+                    'mean_train_value_grad_norm', 'mean_train_policy_grad_norm',
+                    'mean_train_ev', 'mean_train_entropy']
+            if not hasattr(self, '_last'): self._last = {}
+            for k in keys:
+                if k in stat:
+                    self._last[k] = stat[k]
+                elif k in self._last:
+                    stat[k] = self._last[k]
+            # print('model_stat: ', stat.keys())
+            ############
 
     def evaluation(self, stat, trainer):
         num_eval_episodes = self.args.num_eval_episodes

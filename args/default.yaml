@@ -11,8 +11,8 @@
 "grad_clip_eps": 1.0 # activated when grad_clip=True
 "save_model_freq": 100 # episodes
 "replay_warmup": 0 #  probar --> 2000-4000 (8-16 episodios)
-"policy_lrate": null # EN MAPPO
-"value_lrate": null # EN MAPPO
+#"policy_lrate": null # EN MAPPO
+#"value_lrate": null # EN MAPPO
 "mixer_lrate": null
 "target": True
 "target_lr": 0.01  # 0.1 ---> actualización suave de Polyak
@@ -27,28 +27,28 @@
 "shared_critic": True
 "layernorm": True # add layernorm on the first layer over inputs
 "mixer": False
-"gaussian_policy": False
+#"gaussian_policy": False #EN MAPPO
 "LOG_STD_MIN": 0.0 # activated only if gaussian_policy is True
 "LOG_STD_MAX": 0.5
 "fixed_policy_std": 0.3 # 1.0 # activated if gaussian policy is False, for exploration
 "hid_activation": "relu" # tanh/relu
 "init_type": "normal" # normal/orthogonal
 "init_std": 0.1
-"action_enforcebound": True
+#"action_enforcebound": True #EN MAPPO
 "double_q": True
 "clip_c": 1.0
 "gamma": 0.99
 "hid_size": 64
 "continuous": True # if the control variable is continuous
-"normalize_advantages": False  #EN MAPPO
-"train_episodes_num": 1000 # total de episodios
-"behaviour_update_freq": 4 #EN MAPPO transition update: steps / episodic update: episodes
-"target_update_freq": 120 #EN MAPPO  transition update: steps / episodic update: episodes
-"policy_update_epochs": 1
-"value_update_epochs": 30
+#"normalize_advantages": False  #EN MAPPO
+"train_episodes_num": 10000 # total de episodios
+#"behaviour_update_freq": 4 #EN MAPPO transition update: steps / episodic update: episodes
+#"target_update_freq": 20 #EN MAPPO  transition update: steps / episodic update: episodes
+#"policy_update_epochs": 10 #EN MAPPO
+#"value_update_epochs": 10  #EN MAPPO
 "mixer_update_epochs": null
-"reward_normalisation": False
-"fixed_reward_normalisation": False
+#"reward_normalisation": False #EN MAPPO
+#"fixed_reward_normalisation": False #EN MAPPO
 "reward_scale": 10
 "eval_freq": 50 # evaluation per xxx episodes
 "num_eval_episodes": 10 # number of episodes for an evaluation

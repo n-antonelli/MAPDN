@@ -126,6 +126,7 @@ class PGTrainer(object):
         self.behaviour_net.train_process(stat, self)
         if (episode%self.args.eval_freq == self.args.eval_freq-1) or (episode == 0):
             self.behaviour_net.evaluation(stat, self)
+        # print('trainer_stat: ', stat.keys())
 
     def logging(self, stat):
         for k, v in stat.items():

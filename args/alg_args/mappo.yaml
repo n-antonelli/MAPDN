@@ -8,10 +8,11 @@ alg_args:
     "lambda_": 0.95
     "eps_clip": 0.2 # 0.6
     "value_loss_coef": 2.
-    "reward_normalisation": True
-    "normalize_advantages": True
+    "reward_normalisation": False
+    "fixed_reward_normalisation": False
+    "normalize_advantages": False
     "gaussian_policy": False
     "action_enforcebound": True
-    "behaviour_update_freq": 1 # transition update: steps / episodic update: episodes
-    "target_update_freq": 480 # transition update: steps / episodic update: episodes
+    "behaviour_update_freq": 4 # transition update: steps / episodic update: episodes
+    "target_update_freq": 20 # transition update: steps / episodic update: episodes
     "grad_clip": True
