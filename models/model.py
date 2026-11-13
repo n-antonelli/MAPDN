@@ -17,6 +17,7 @@ class Model(nn.Module):
         self.act_dim = self.args.action_dim
         self.Transition = namedtuple('Transition', ('state', 'action', 'log_prob_a', 'value', 'next_value', 'reward', 'next_state', 'done', 'last_step', 'action_avail', 'last_hid', 'hid'))
         self.batchnorm = nn.BatchNorm1d(self.n_)
+        self.sum_rewards = 0
         
     def reload_params_to_target(self):
         self.target_net.policy_dicts.load_state_dict( self.policy_dicts.state_dict() )
@@ -231,6 +232,7 @@ class Model(nn.Module):
             # reward
             reward, done, info = trainer.env.step(actual)
             reward_repeat = [reward]*trainer.env.get_num_of_agents()
+            # self.sum_rewards += sum(reward.values())
             # next state, action, value
             next_state = trainer.env.get_obs()
             next_state_ = prep_obs(next_state).to(self.device).contiguous().view(1, self.n_, self.obs_dim)
@@ -244,7 +246,7 @@ class Model(nn.Module):
                                     log_prob_a.detach().cpu().numpy(),
                                     value.detach().cpu().numpy(),
                                     next_value.detach().cpu().numpy(),
-                                    np.array(reward_repeat),
+                                    np.array(reward_repeat), #self.sum_rewards),
                                     next_state,
                                     done,
                                     done_,
@@ -314,6 +316,7 @@ class Model(nn.Module):
                     else:
                         stat_test_epi['mean_test_' + k] += v
                 stat_test_epi['mean_test_reward'] += reward
+                # stat_test_epi['mean_test_reward'] += sum(reward.values())
                 if done_:
                     break
                 # set the next state

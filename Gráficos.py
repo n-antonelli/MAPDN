@@ -167,6 +167,15 @@ if mode == 'train':
     plt.ylabel("mean_train_policy_loss")
     plt.show()
 
+    df["mean_train_entropy"] = calcular_promedio_movil(df["mean_train_entropy"], 20, mode)
+    mean_train_entropy = df["mean_train_entropy"].dropna()
+    mean_train_entropy.plot()
+    plt.title(f"{algoritmo}-{clase} - mean train entropy")
+    plt.grid(True, alpha=0.3)
+    plt.xlabel("episode")
+    plt.ylabel("mean_train_entropy")
+    plt.show()
+
     df["mean_train_ev"] = calcular_promedio_movil(df["mean_train_ev"], 20, mode)
     mean_train_ev = df["mean_train_ev"].dropna()
     mean_train_ev.plot()
