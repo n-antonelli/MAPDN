@@ -65,7 +65,7 @@ class PPO(ReinforcementLearning):
         # normalise advantage
         if behaviour_net.args.normalize_advantages:
             advantages = self.batchnorm(advantages)
-        returns = (advantages + old_values).detach()
+
         with th.no_grad():
             self.last_ev = (1 - (returns - values).var() / (returns.var() + 1e-8)).item()
         # print('ev:', self.ev)
