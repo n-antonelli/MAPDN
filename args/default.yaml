@@ -17,8 +17,8 @@
 "target": True
 "target_lr": 0.01  # 0.1 ---> actualización suave de Polyak
 "entr": 1.0e-3
-"max_steps": 240
-"batch_size": 4 #decentralised-apisodic -> 1 / distributed -> 32 # transition update: steps / episodic update: episodes
+"max_steps": 480
+"batch_size": 16 # Episodios por actualización - decentralised-episodic -> 1 / distributed -> 32 # transition update: steps / episodic update: episodes
 "replay": True
 "replay_buffer_size": 2.0e+4 #83 epi (240 steps) 5.0e+3
 "agent_type": "rnn" # rnn/mlp

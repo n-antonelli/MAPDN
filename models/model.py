@@ -58,7 +58,7 @@ class Model(nn.Module):
                         trainer.mixer_replay_process(stat)
                 # TODO: hard code
                 # clear replay buffer for on-policy algorithm
-                if self.__class__.__name__ in ["COMA", "IAC", "IPPO", "MAPPO"] :
+                if self.__class__.__name__ in ["COMA", "IAC", "IPPO", "MAPPO"]:
                     trainer.replay_buffer.clear()
         else:
             trans_cond = trainer.steps%self.args.behaviour_update_freq==0
@@ -231,8 +231,8 @@ class Model(nn.Module):
             _, actual = translate_action(self.args, action, trainer.env)
             # reward
             reward, done, info = trainer.env.step(actual)
-            reward_repeat = [reward]*trainer.env.get_num_of_agents()
-            # self.sum_rewards += sum(reward.values())
+            # reward_repeat = [reward]*trainer.env.get_num_of_agents()
+            reward_repeat = sum(reward.values())
             # next state, action, value
             next_state = trainer.env.get_obs()
             next_state_ = prep_obs(next_state).to(self.device).contiguous().view(1, self.n_, self.obs_dim)
@@ -263,7 +263,7 @@ class Model(nn.Module):
                     stat_train['mean_train_' + k] = v
                 else:
                     stat_train['mean_train_' + k] += v
-            stat_train['mean_train_reward'] += reward
+            stat_train['mean_train_reward'] += sum(reward.values())  # reward
             trainer.steps += 1
             if done_:
                 break
@@ -315,7 +315,7 @@ class Model(nn.Module):
                         stat_test_epi['mean_test_' + k] = v
                     else:
                         stat_test_epi['mean_test_' + k] += v
-                stat_test_epi['mean_test_reward'] += reward
+                stat_test_epi['mean_test_reward'] += sum(reward.values())  # reward
                 # stat_test_epi['mean_test_reward'] += sum(reward.values())
                 if done_:
                     break
@@ -339,7 +339,7 @@ class Model(nn.Module):
         last_step = th.tensor(batch.last_step, dtype=th.float).to(self.device).contiguous().view(-1, 1)
         done = th.tensor(batch.done, dtype=th.float).to(self.device).contiguous().view(-1, 1)
         action = th.tensor(np.concatenate(batch.action, axis=0), dtype=th.float).to(self.device)
-        log_prob_a = th.tensor(np.concatenate(batch.action, axis=0), dtype=th.float).to(self.device)
+        log_prob_a = th.tensor(np.concatenate(batch.log_prob_a, axis=0), dtype=th.float).to(self.device)
         value = th.tensor(np.concatenate(batch.value, axis=0), dtype=th.float).to(self.device)
         next_value = th.tensor(np.concatenate(batch.next_value, axis=0), dtype=th.float).to(self.device)
         state = prep_obs( list( zip(batch.state) ) ).to(self.device)

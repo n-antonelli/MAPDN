@@ -2,7 +2,7 @@ from learning_algorithms.rl_algorithms import ReinforcementLearning
 from utilities.util import normal_log_density, multinomials_log_density
 import torch as th
 import torch.nn as nn
-
+from torch.distributions import Normal
 
 
 class PPO(ReinforcementLearning):
@@ -19,24 +19,33 @@ class PPO(ReinforcementLearning):
         old_values = old_values.squeeze(-1)
         old_next_values = old_next_values.squeeze(-1)
         if self.args.continuous:
-            means, log_stds, _ = behaviour_net.policy(state, last_hid=last_hids)
+            ############
+            means, log_stds, _ = behaviour_net.policy(state, last_hid=last_hids)  # (b, n, a)
+            stds = log_stds.exp()
+            action_out = (means, log_stds)
             if means.size(-1) > 1:
                 # means_ = means.sum(dim=1, keepdim=True)
                 # log_stds_ = log_stds.sum(dim=1, keepdim=True)
-                ############
+
                 mask = (actions_avail != 0).float().to(self.device)  # (b, n, a)
                 means_ = (means * mask).sum(dim=1, keepdim=True)
                 log_stds_ = (log_stds * mask).sum(dim=1, keepdim=True)
                 # print(log_stds_.exp())
-                ############
             else:
                 means_ = means
                 log_stds_ = log_stds
             action_out = (means, log_stds)
             log_prob_a = normal_log_density(actions, means_, log_stds_)
+            # if self.args.action_enforcebound:
+            #     a = actions.clamp(-1 + 1e-6, 1 - 1e-6)  # ver nota sobre action_scale
+            #     x = th.atanh(a)
+            #     log_prob_a = Normal(means, stds).log_prob(x) - th.log(1 - a.pow(2) + 1e-6)
+            # else:
+            #     log_prob_a = Normal(means, stds).log_prob(actions)
+            ############
             restore_mask = 1. - (actions_avail == 0).to(self.device).float()
-            log_prob_a = (restore_mask * log_prob_a).sum(dim=-1)
-            old_log_prob_a = (restore_mask * old_log_prob_a).sum(dim=-1)
+            log_prob_a = (restore_mask * log_prob_a).sum(dim=-1)            # (b, n)
+            old_log_prob_a = (restore_mask * old_log_prob_a).sum(dim=-1)    # (b, n)
         else:
             logits, _ = behaviour_net.policy(state, last_hid=last_hids)
             logits[actions_avail == 0] = -9999999
@@ -62,14 +71,20 @@ class PPO(ReinforcementLearning):
             advantages[i] = last_advantages
         # done = done.to(self.device)
         # returns = rewards + behaviour_net.args.gamma * (1 - done) * next_values.detach()
-        # normalise advantage
-        if behaviour_net.args.normalize_advantages:
-            advantages = self.batchnorm(advantages)
+        returns = (advantages + old_values).detach()
 
         with th.no_grad():
             self.last_ev = (1 - (returns - values).var() / (returns.var() + 1e-8)).item()
+
+        # normalise advantage
+        if behaviour_net.args.normalize_advantages:
+            advantages = (advantages - advantages.mean(0)) / (advantages.std(0) + 1e-8)  # self.batchnorm(advantages)
         # print('ev:', self.ev)
         # print('returns: ', returns.mean(), 'old_values: ', old_values.mean())
+        r = ratios.detach()
+        # print(r.mean().item(), r.std().item(), r.min().item(), r.max().item(),
+        #       ((r < 0.8) | (r > 1.2)).float().mean().item())
+        # print('actions: ',actions.abs().max())
         ############
         # policy loss
         assert ratios.size() == advantages.size()
